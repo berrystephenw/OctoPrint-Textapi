@@ -6,6 +6,7 @@ import octoprint.plugin
 
 # The purpose of this plugin is to demonstrate how to format notifications, detect the presence of OctoText, look for
 # error responses and send text notifications in your plugin.
+# It requires OctoText version > 0.3.0
 
 
 class TextapiPlugin(
