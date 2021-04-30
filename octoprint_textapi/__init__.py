@@ -11,6 +11,7 @@ import octoprint.plugin
 
 class TextapiPlugin(
     octoprint.plugin.SettingsPlugin,
+    octoprint.plugin.StartupPlugin,
     octoprint.plugin.AssetPlugin,
     octoprint.plugin.SimpleApiPlugin,
     octoprint.plugin.TemplatePlugin,
@@ -33,7 +34,7 @@ class TextapiPlugin(
             "js": ["js/textapi.js"],
         }
 
-    # for this test a button is included in the nav bar that initiates the sending of the message
+    # for this test a button is included in the nav bar that initiates the sending of the message (empty mailbox)
     def on_api_get(self, request):
 
         self._logger.debug("TEST API The test button was pressed...")
@@ -42,7 +43,7 @@ class TextapiPlugin(
         title = "This is the message title"
         description = "this is the body of the message or email"
         printer_name = (
-            "FOOBAR"  # you can use this to inform people this is coming from your plugin
+            self._identifier  # you can use this to inform people this is coming from your plugin
         )
         thumbnail_filename = ""  # path to a thumbnail image to be sent.
         do_cam_snapshot = (
@@ -57,7 +58,6 @@ class TextapiPlugin(
                 ("send_image", do_cam_snapshot),
             ]
         )
-        self._logger.debug(f"self._identifier: {self._identifier}")
         error = None
         try:
             self._plugin_manager.send_plugin_message("OctoText", {"test": data})
@@ -68,7 +68,7 @@ class TextapiPlugin(
 
     def on_after_startup(self):
         # just let the user know that the plugin has loaded
-        self._logging.info("*** Test API for OctoText loaded!!! ***")
+        self._logger.info("*** Test API for OctoText loaded!!! ***")
 
     ##~~ Softwareupdate hook
 
