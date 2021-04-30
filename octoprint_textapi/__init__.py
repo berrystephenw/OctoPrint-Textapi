@@ -58,11 +58,22 @@ class TextapiPlugin(
                 ("send_image", do_cam_snapshot),
             ]
         )
+
+        # check to see if OctoText exists
+        p_info = self._plugin_manager.get_plugin_info("OctoText", require_enabled=True)
+        if p_info is None:
+            self._logger.debug("OctoText is not loaded or enabled on this system!")
+            error = "NOT_LOADED"
+            return flask.make_response(flask.jsonify(result=True, error=error))
+        self._logger.debug(f"OctoText version {p_info.version}")
+        self._logger.debug(f"OctoText info block: {p_info}")
+        if p_info.loaded:
+            self._logger.debug("OctoText has been loaded")
         error = None
         try:
             self._plugin_manager.send_plugin_message("OctoText", {"test": data})
         except Exception as e:
-            error = "NOT_LOADED"
+            error = "NOT_ENABLED"
             self._logger.debug(f"Exception sending API message: {e}")
         return flask.make_response(flask.jsonify(result=True, error=error))
 
