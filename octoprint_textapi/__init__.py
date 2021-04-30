@@ -1,79 +1,102 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-### (Don't forget to remove me)
-# This is a basic skeleton for your plugin's __init__.py. You probably want to adjust the class name of your plugin
-# as well as the plugin mixins it's subclassing from. This is really just a basic skeleton to get you started,
-# defining your plugin as a template plugin, settings and asset plugin. Feel free to add or remove mixins
-# as necessary.
-#
-# Take a look at the documentation on what other plugin mixins are available.
-
+import flask
 import octoprint.plugin
 
-class TextapiPlugin(octoprint.plugin.SettingsPlugin,
-                    octoprint.plugin.AssetPlugin,
-                    octoprint.plugin.TemplatePlugin):
-
-	##~~ SettingsPlugin mixin
-
-	def get_settings_defaults(self):
-		return dict(
-			# put your plugin's default settings here
-		)
-
-	##~~ AssetPlugin mixin
-
-	def get_assets(self):
-		# Define your plugin's asset files to automatically include in the
-		# core UI here.
-		return dict(
-			js=["js/textapi.js"],
-			css=["css/textapi.css"],
-			less=["less/textapi.less"]
-		)
-
-	##~~ Softwareupdate hook
-
-	def get_update_information(self):
-		# Define the configuration for your plugin to use with the Software Update
-		# Plugin here. See https://docs.octoprint.org/en/master/bundledplugins/softwareupdate.html
-		# for details.
-		return dict(
-			textapi=dict(
-				displayName="Textapi Plugin",
-				displayVersion=self._plugin_version,
-
-				# version check: github repository
-				type="github_release",
-				user="berrystephenw",
-				repo="OctoPrint-Textapi",
-				current=self._plugin_version,
-
-				# update method: pip
-				pip="https://github.com/berrystephenw/OctoPrint-Textapi/archive/{target_version}.zip"
-			)
-		)
+# The purpose of this plugin is to demonstrate how to format notifications, detect the presence of OctoText, look for
+# error responses and send text notifications in your plugin.
 
 
-# If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
-# ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
-# can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
+class TextapiPlugin(
+    octoprint.plugin.SettingsPlugin,
+    octoprint.plugin.AssetPlugin,
+    octoprint.plugin.SimpleApiPlugin,
+    octoprint.plugin.TemplatePlugin,
+):
+
+    ##~~ SettingsPlugin mixin
+
+    def get_settings_defaults(self):
+        return {
+            "push_message": None,
+            "show_navbar_button": True,
+        }
+
+    ##~~ AssetPlugin mixin
+
+    def get_assets(self):
+        # Define your plugin's asset files to automatically include in the
+        # core UI here.
+        return {
+            "js": ["js/textapi.js"],
+        }
+
+    # for this test a button is included in the nav bar that initiates the sending of the message
+    def on_api_get(self, request):
+
+        self._logger.debug("TEST API The test button was pressed...")
+        self._logger.debug(f"request = {request}")
+
+        title = "This is the message title"
+        description = "this is the body of the message or email"
+        printer_name = (
+            "FOOBAR"  # you can use this to inform people this is coming from your plugin
+        )
+        thumbnail_filename = ""  # path to a thumbnail image to be sent.
+        do_cam_snapshot = (
+            True  # True tries to send an image from the webcam if enabled in OctoText
+        )
+        data = dict(
+            [
+                ("title", title),
+                ("description", description),
+                ("sender", printer_name),
+                ("thumbnail", thumbnail_filename),
+                ("send_image", do_cam_snapshot),
+            ]
+        )
+        self._logger.debug(f"self._identifier: {self._identifier}")
+        error = None
+        try:
+            self._plugin_manager.send_plugin_message("OctoText", {"test": data})
+        except Exception as e:
+            error = "NOT_LOADED"
+            self._logger.debug(f"Exception sending API message: {e}")
+        return flask.make_response(flask.jsonify(result=True, error=error))
+
+    def on_after_startup(self):
+        # just let the user know that the plugin has loaded
+        self._logging.info("*** Test API for OctoText loaded!!! ***")
+
+    ##~~ Softwareupdate hook
+
+    def get_update_information(self):
+        # Define the configuration for your plugin to use with the Software Update
+        # Plugin here. See https://docs.octoprint.org/en/master/bundledplugins/softwareupdate.html
+        # for details.
+        return {
+            "textapi": {
+                "displayName": "Textapi Plugin",
+                "displayVersion": self._plugin_version,
+                "type": "github_release",
+                "user": "berrystephenw",
+                "repo": "OctoPrint-Textapi",
+                "current": self._plugin_version,
+                "pip": "https://github.com/berrystephenw/OctoPrint-Textapi/archive/{target_version}.zip",
+            }
+        }
+
+
 __plugin_name__ = "Textapi Plugin"
+__plugin_pythoncompat__ = ">=3,<4"  # only python 3
 
-# Starting with OctoPrint 1.4.0 OctoPrint will also support to run under Python 3 in addition to the deprecated
-# Python 2. New plugins should make sure to run under both versions for now. Uncomment one of the following
-# compatibility flags according to what Python versions your plugin supports!
-#__plugin_pythoncompat__ = ">=2.7,<3" # only python 2
-#__plugin_pythoncompat__ = ">=3,<4" # only python 3
-#__plugin_pythoncompat__ = ">=2.7,<4" # python 2 and 3
 
 def __plugin_load__():
-	global __plugin_implementation__
-	__plugin_implementation__ = TextapiPlugin()
+    global __plugin_implementation__
+    __plugin_implementation__ = TextapiPlugin()
 
-	global __plugin_hooks__
-	__plugin_hooks__ = {
-		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
-	}
-
+    global __plugin_hooks__
+    __plugin_hooks__ = {
+        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
+    }
