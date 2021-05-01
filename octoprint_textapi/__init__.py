@@ -45,9 +45,13 @@ class TextapiPlugin(
         printer_name = (
             self._identifier  # you can use this to inform people this is coming from your plugin
         )
-        thumbnail_filename = ""  # path to a thumbnail image to be sent.
+        thumbnail_filename = (
+            self._basefolder + "/static/img/Alert.png"
+        )  # path to a thumbnail image to be sent. Set to None if not used.
         do_cam_snapshot = (
             True  # True tries to send an image from the webcam if enabled in OctoText
+            # only one image is sent, either the thumbnail or webcam and the
+            # thumbnail takes precedence
         )
         data = dict(
             [
@@ -79,6 +83,8 @@ class TextapiPlugin(
 
     def on_after_startup(self):
         # just let the user know that the plugin has loaded
+        basefolder = self._basefolder
+        self._logger.info(f"plugin base folder: {basefolder}")
         self._logger.info("*** Test API for OctoText loaded!!! ***")
 
     ##~~ Softwareupdate hook
