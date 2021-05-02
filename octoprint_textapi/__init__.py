@@ -48,6 +48,7 @@ class TextapiPlugin(
         thumbnail_filename = (
             self._basefolder + "/static/img/Alert.png"
         )  # path to a thumbnail image to be sent. Set to None if not used.
+        # thumbnail_filename = None
         do_cam_snapshot = (
             True  # True tries to send an image from the webcam if enabled in OctoText
             # only one image is sent, either the thumbnail or webcam and the
