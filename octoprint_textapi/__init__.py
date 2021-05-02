@@ -40,7 +40,7 @@ class TextapiPlugin(
         self._logger.debug("TEST API The test button was pressed...")
         self._logger.debug(f"request = {request}")
 
-        title = "This is the message title"
+        title = "This is the message title"  # text only, no special characters
         description = "this is the body of the message or email"
         printer_name = (
             self._identifier  # you can use this to inform people this is coming from your plugin
