@@ -4,6 +4,13 @@
  * Author: Stephen Berry
  * License: AGPLv3
  */
+
+$(document).ready(function(){
+    $('[tool-tip-toggle="tooltip"]').tooltip({
+        placement : 'bottom'
+    });
+});
+
 $(function() {
     function TextapiViewModel(parameters) {
         var self = this;
@@ -38,12 +45,6 @@ $(function() {
                             text = gettext("OctoText is either not loaded or an older installation. Requires OctoText 0.3.0 or higher!");
                         } else if (response.error === "NOT_ENABLED") {
                             text = gettext("OctoText is not responding. Is the plugin disabled or older than 0.3.0?");
-                        } else if (response.error === "SENDM_E") {
-                            text = gettext("Exception while logging into mail server. Check your login and password.");
-                        } else if (response.error === "SMTP_E") {
-                            text = gettext("Exception while talking to your mail server, check your SMTP settings.");
-                        } else {
-                            text = gettext("Test message could not be sent, check log & your settings");
                         }
                         new PNotify({
                             title: gettext("Test message could not be sent"),
