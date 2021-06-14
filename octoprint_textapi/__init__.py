@@ -1,12 +1,9 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
-
 import flask
 import octoprint.plugin
 
 # The purpose of this plugin is to demonstrate how to format notifications, detect the presence of OctoText, look for
 # error responses and send text notifications in your plugin.
-# It requires OctoText version > 0.3.0
+# It requires OctoText version > 0.3.1
 
 
 class TextapiPlugin(
@@ -64,6 +61,17 @@ class TextapiPlugin(
             ]
         )
 
+        # using the helper function to call OctoText. send_text assigned in on_after_startup()
+        if self.send_text:
+            result = self.send_text(command="OctoText", data={"test": data})
+            self._logger.debug(f"OctoText api result {result}")
+            return flask.make_response(flask.jsonify(result=True, error=result))
+
+        # the following code sends the message through the PluginManager and is less efficient than using the helper
+        # above. As written this code will never execute as OctoText has a helper function and it is the preferred way
+        # to access the plugin.
+        # It does work however, and it is left here because the code functions and may be helpful in some cases.
+
         # check to see if OctoText exists
         p_info = self._plugin_manager.get_plugin_info("OctoText", require_enabled=True)
         if p_info is None:
@@ -82,11 +90,22 @@ class TextapiPlugin(
             self._logger.debug(f"Exception sending API message: {e}")
         return flask.make_response(flask.jsonify(result=True, error=error))
 
+    sent_text = ""
+
     def on_after_startup(self):
         # just let the user know that the plugin has loaded
         basefolder = self._basefolder
         self._logger.info(f"plugin base folder: {basefolder}")
         self._logger.info("*** Test API for OctoText loaded!!! ***")
+
+        # find the helper function for OctoText - send_text:
+        # def send_text(self,
+        #              command: {__ne__},
+        #              data: {__getitem__},
+        #              permissions: Any = None) -> Optional[bool]
+        helpers = self._plugin_manager.get_helpers("OctoText")
+        if helpers and "send_text" in helpers:
+            self.send_text = helpers["send_text"]
 
     ##~~ Softwareupdate hook
 
