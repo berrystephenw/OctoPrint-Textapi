@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import flask
 import octoprint.plugin
 
@@ -42,21 +43,32 @@ class TextapiPlugin(
         printer_name = (
             self._identifier  # you can use this to inform people this is coming from your plugin
         )
-        thumbnail_filename = (
-            self._basefolder + "/static/img/Alert.png"
-        )  # path to a thumbnail image to be sent. Set to None if not used.
-        # thumbnail_filename = None
+        filename = (
+            # self._basefolder + "/static/img/Alert.png"
+            self._basefolder
+            + "/static/img/Alert.zip"
+        )  # path to an image or file to be sent. Set to None if not used.
+        # filename = None
+        # ftype = "jpg"
+        ftype = "zip"
+
+        #  atype = (
+        #    "image"  # see EmailMessage.add_attachment() for types; application for zip.
+        # )
+        atype = "application"  # see EmailMessage.add_attachment() for types; application for zip.
         do_cam_snapshot = (
             True  # True tries to send an image from the webcam if enabled in OctoText
-            # only one image is sent, either the thumbnail or webcam and the
-            # thumbnail takes precedence
+            # only one file is sent, either the specified file or webcam and the
+            # file takes precedence
         )
         data = dict(
             [
                 ("title", title),
                 ("description", description),
                 ("sender", printer_name),
-                ("thumbnail", thumbnail_filename),
+                ("filename", filename),
+                ("filetype", ftype),
+                ("attachment_type", atype),
                 ("send_image", do_cam_snapshot),
             ]
         )
